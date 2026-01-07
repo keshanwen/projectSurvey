@@ -22,6 +22,77 @@
 * 更好的目录组织结构，代码共享。
 
 
+### pnpm-workspace.yaml
+是pnpm工作区（workspace）的配置文件，pnpm会根据这个文件来识别出哪些项目是工作区中的项目。
+
+#### 主要作用
+1. 定义工作区范围
+```javascript
+packages:
+  - "apps/*"      # 所有应用程序
+  - "packages/*"  # 所有共享包
+  - "components"  # 单个包目录
+```
+告诉pnpm哪些目录包含可能需要被管理的包。
+支持通配符模式功能。
+
+2， 启用工作区功能
+* 依赖提升： 将共同的依赖安装在根目录的 node_modules 中.
+* 符合连接： 工作区内的包相互引用时使用本地连接。
+* 统一安装： 一次性安装所有包的依赖。
+* 跨包脚本执行： 可以在根目录运行所有包或者特定包的脚本。
+
+3. 实际项目结构实例
+```javascript
+my-monorepo/
+├── pnpm-workspace.yaml    # ← 就是这个文件
+├── package.json           # 根项目的 package.json
+├── apps/
+│   ├── web-app/
+│   │   └── package.json
+│   └── mobile-app/
+│       └── package.json
+└── packages/
+    ├── shared-utils/
+    │   └── package.json
+    └── ui-components/
+        └── package.json
+```
+4. 常用配置项
+```javascript
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "!**/test/**"      # 排除测试目录
+  - "!**/__tests__/**" # 排除测试目录
+
+link-workspace-packages: true  # 优先链接工作区包
+shared-workspace-lockfile: true # 共享锁文件（默认）
+```
+```javascript
+# 复杂项目结构示例
+packages:
+  - "apps/*"           # 所有应用
+  - "packages/*"       # 所有共享包
+  - "libs/*"           # 库文件
+  - "tools/*"          # 工具脚本
+  - "docs"             # 文档站点
+  - "!**/templates/**" # 排除模板目录
+```
+5. 工作原理
+当你在根目录运行 pnpm install：
+
+（1）pnpm 读取 pnpm-workspace.yaml
+
+（2）扫描 apps/ 和 packages/ 下的所有 package.json
+
+（3）分析依赖关系图
+
+（4）将公共依赖安装在根 node_modules
+
+（5）为工作区内的包创建符号链接
+
+
 
 ### Svete 
 * 编译时优化
@@ -36,3 +107,6 @@
 * 生态规模：社区和第三方库虽在增长，但相比 React/Vue 仍较小。
 * 企业采用率：大型企业案例较少，但正在上升（如 Apple、Spotify 部分使用）。
 * 编译依赖：需构建步骤（类似 Vue/React，但不可直接通过 CDN 使用运行时版本）。
+
+
+
