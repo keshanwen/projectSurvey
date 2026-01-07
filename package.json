@@ -10,7 +10,8 @@
     "preview": "pnpm --filter project1-vue3 preview",
     "dev:2": "pnpm --filter project2-vue3 dev",
     "build:2": "pnpm --filter project2-vue3 build",
-    "preview:2": "pnpm --filter project2-vue3 preview"
+    "preview:2": "pnpm --filter project2-vue3 preview",
+    "dev:3": "pnpm --filter project3-react dev"
   },
   "engines": {
     "node": ">=20.19.6",
