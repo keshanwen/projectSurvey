@@ -137,6 +137,20 @@ package.json 中就会自动添加如下依赖，"workspace:" 只会解析本地
 import { sum } from '@project-survey/utils'
 ```
 
+### 公供库打包
+
+安装`rollup`
+
+```shell
+pnpm -Dw add rollup @rollup/plugin-node-resolve @rollup/plugin-commonjs rollup-plugin-typescript2 @rollup/plugin-terser @vitejs/plugin-vue rollup-plugin-postcss
+```
+
+- `@rollup/plugin-node-resolve`: 解析 node_modules 中的依赖
+- `@rollup/plugin-commonjs`: 将 CommonJS 模块转为 ESM
+- `rollup-plugin-typescript2`: 让 Rollup 支持 TS 编译
+- `@rollup/plugin-terser`： 压缩和混淆
+- `@vitejs/plugin-vue`： 支持SFC编译
+- `rollup-plugin-postcss`： 处理css代码
 
 ### Svete 
 * 编译时优化

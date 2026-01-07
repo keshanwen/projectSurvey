@@ -11,7 +11,8 @@
     "dev:2": "pnpm --filter project2-vue3 dev",
     "build:2": "pnpm --filter project2-vue3 build",
     "preview:2": "pnpm --filter project2-vue3 preview",
-    "dev:3": "pnpm --filter project3-react dev"
+    "dev:3": "pnpm --filter project3-react dev",
+    "build:packages": "node ./scripts/build.js"
   },
   "engines": {
     "node": ">=20.19.6",
@@ -22,9 +23,15 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^0.4.4",
     "@types/node": "^24.10.4",
-    "@vitejs/plugin-vue": "^6.0.1",
+    "@vitejs/plugin-vue": "^6.0.3",
     "@vue/tsconfig": "^0.8.1",
+    "rollup": "^4.55.1",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-typescript2": "^0.36.0",
     "typescript": "~5.9.3",
     "vite": "^7.2.4",
     "vue-tsc": "^3.1.4"

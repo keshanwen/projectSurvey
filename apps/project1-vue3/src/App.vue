@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue' 
-import HelloWorld from './components/HelloWorld.vue'
 import { sum } from '@project-survey/utils'
 import { List } from "@project-survey/ui"
 

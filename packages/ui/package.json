@@ -9,5 +9,13 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "buildOptions": {
+    "name": "ProjectSurveyUI",
+    "formats": [
+      "esm",
+      "cjs",
+      "iife"
+    ]
+  },
   "description": ""
 }
