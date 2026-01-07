@@ -121,6 +121,22 @@ pnpm ls -r | grep "link:"
 */ 
 ```
 
+### 如何共享子包
+用--workspace参数去安装共享子包，会去 workspace工作空间中找依赖项并安装
+```javascript
+pnpm install @project-survey/utils --workspace -w
+```
+package.json 中就会自动添加如下依赖，"workspace:" 只会解析本地 workspace 包含的 package
+```javascript
+ "dependencies": {
+    "@project-survey/utils": "workspace:^"
+  }
+```
+此时，项目就可以使用公共包 libc-shared 里的方法，import 引入即可
+```javascript
+import { sum } from '@project-survey/utils'
+```
+
 
 ### Svete 
 * 编译时优化
