@@ -1,0 +1,18 @@
+{
+  "name": "projectsurvey",
+  "version": "1.0.0",
+  "description": "这是一个monorepo 环境调研项目",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "pnpm --filter project1-vue3 dev",
+    "build": "pnpm --filter project1-vue3 build",
+    "preview": "pnpm --filter project1-vue3 preview",
+    "dev:2": "pnpm --filter project2-vue3 dev",
+    "build:2": "pnpm --filter project2-vue3 build",
+    "preview:2": "pnpm --filter project2-vue3 preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -108,5 +108,31 @@ packages:
 * 企业采用率：大型企业案例较少，但正在上升（如 Apple、Spotify 部分使用）。
 * 编译依赖：需构建步骤（类似 Vue/React，但不可直接通过 CDN 使用运行时版本）。
 
+```javascript
+// 查看所有包的依赖关系（包括软连接）
+pnpm list -r
+
+// 只查看顶层依赖
+pnpm list -r --depth=0
+// 查看特定包的链接状态
+pnpm why <package-name> -r
+
+// 查看所有本地包的链接
+pnpm ls -r | grep "link:"
+```
+```javascript
+/*
+
+  启动项目
+  1， 直接进入到你的项目中启动脚本。
+
+  2， 直接在monorepo 工程的根目录执行 
+    pnpm --filter project1-vue3 dev
+    --filter 过滤/选择特定包
+    dev 要运行的命令 通常是 package.json 中的 script
+
+    这一块后期为了方便可以直接在更目录下写一个可视化交换脚本，减少操作负担。
+*/ 
+```
 
 
