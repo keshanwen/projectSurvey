@@ -12,6 +12,7 @@
 6. 页面打包之后资源如果很少可以考虑资源直接打包到html文件里面，如果资源很多可以有单独的资源文件但是要加载快，因为这些页面都是在app的webview里面使用。
 
 [参考文章](https://juejin.cn/post/7215886869199896637 带你了解更全面的 Monorepo - 优劣、踩坑、选型)
+[参考文章](https://github.com/burc-li/pnpm-monorepo/tree/main 代码示例)
 
 # monorepo 
 

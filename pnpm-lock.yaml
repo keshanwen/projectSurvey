@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@project-survey/utils':
+        specifier: workspace:*
+        version: link:packages/utils
     devDependencies:
       '@types/node':
         specifier: ^24.10.4
@@ -110,6 +114,8 @@ importers:
       vite:
         specifier: ^7.2.4
         version: 7.3.0(@types/node@24.10.4)
+
+  packages/utils: {}
 
 packages:
 
