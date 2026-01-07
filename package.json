@@ -12,6 +12,11 @@
     "build:2": "pnpm --filter project2-vue3 build",
     "preview:2": "pnpm --filter project2-vue3 preview"
   },
+  "engines": {
+    "node": ">=20.19.6",
+    "npm": ">=10.8.2",
+    "pnpm": ">=10.26.1"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC"
