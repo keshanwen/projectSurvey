@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@project-survey/ui':
+        specifier: workspace:*
+        version: link:packages/ui
       '@project-survey/utils':
         specifier: workspace:*
         version: link:packages/utils
@@ -132,6 +135,8 @@ importers:
       vite:
         specifier: ^7.2.4
         version: 7.3.1(@types/node@24.10.4)
+
+  packages/ui: {}
 
   packages/utils: {}
 

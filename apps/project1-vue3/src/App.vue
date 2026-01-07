@@ -2,6 +2,7 @@
 import { ref } from 'vue' 
 import HelloWorld from './components/HelloWorld.vue'
 import { sum } from '@project-survey/utils'
+import { List } from "@project-survey/ui"
 
 
 let a = ref(1)
@@ -17,6 +18,7 @@ const hanleclick = () => {
   <div>
    <h1>{{ sum(a,b) }}</h1>
    <button @click="hanleclick">click</button>
+   <List/>
   </div>
   
 </template>
