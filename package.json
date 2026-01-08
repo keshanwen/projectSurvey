@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "pnpm --filter project1-vue3 dev",
+    "dev": "node ./scripts/dev-select-advanced.js",
     "build": "pnpm --filter project1-vue3 build",
     "preview": "pnpm --filter project1-vue3 preview",
     "dev:2": "pnpm --filter project2-vue3 dev",
