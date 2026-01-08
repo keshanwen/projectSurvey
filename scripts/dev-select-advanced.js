@@ -1,135 +1,164 @@
 #!/usr/bin/env node
 
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 import { exec } from "child_process";
-import { fileURLToPath } from "url";
+import { promisify } from "util";
+import readline from "readline";
+import chalk from "chalk";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const execAsync = promisify(exec);
 
-// 获取 apps 目录路径
-const appsDir = path.join(__dirname, "..", "apps");
+// 创建 readline 接口
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
-// 检查 apps 目录是否存在
-if (!fs.existsSync(appsDir)) {
-  console.error("apps 目录不存在");
-  process.exit(1);
-}
-
-// 获取 apps 目录下的一级子目录
-const getSubdirectories = dir => {
-  return fs.readdirSync(dir).filter(item => {
-    const itemPath = path.join(dir, item);
-    return fs.statSync(itemPath).isDirectory();
+const question = query =>
+  new Promise(resolve => {
+    rl.question(query, resolve);
   });
-};
 
-// 检查目录是否包含 package.json 并有 dev 脚本
-const hasDevScript = dir => {
-  const packageJsonPath = path.join(dir, "package.json");
-  if (!fs.existsSync(packageJsonPath)) {
-    return false;
-  }
-
+async function selectAndRunApp() {
   try {
-    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
-    return packageJson.scripts && packageJson.scripts.dev;
-  } catch (error) {
-    return false;
-  }
-};
+    const appsDir = path.join(process.cwd(), "apps");
 
-// 获取有效的项目目录
-const validProjects = getSubdirectories(appsDir).filter(projectName => {
-  const projectPath = path.join(appsDir, projectName);
-  return hasDevScript(projectPath);
-});
-
-if (validProjects.length === 0) {
-  console.log("没有找到包含 dev 脚本的项目");
-  process.exit(0);
-}
-
-// 显示项目列表并让用户选择
-console.log("请选择要运行 dev 命令的项目:");
-validProjects.forEach((project, index) => {
-  console.log(`${index + 1}. ${project}`);
-});
-
-const readline = process.stdin;
-readline.setEncoding("utf8");
-readline.setRawMode?.(true); // 设置为原始模式以支持箭头键
-
-let inputBuffer = "";
-let selectedIndex = 0;
-
-console.log("\n使用数字键或方向键选择，按回车确认:");
-
-readline.on("data", chunk => {
-  inputBuffer += chunk;
-
-  // 处理回车键
-  if (chunk.includes("\n") || chunk.includes("\r")) {
-    const selection = inputBuffer.trim();
-    let projectIndex;
-
-    if (/^\d+$/.test(selection)) {
-      // 如果输入的是数字
-      projectIndex = parseInt(selection) - 1;
-    } else {
-      // 如果输入的是序号对应的数字
-      projectIndex = selectedIndex;
+    // 检查 apps 目录是否存在
+    try {
+      await fs.access(appsDir);
+    } catch {
+      console.log(chalk.red("❌ apps 目录不存在！"));
+      process.exit(1);
     }
 
-    if (projectIndex >= 0 && projectIndex < validProjects.length) {
-      const selectedProject = validProjects[projectIndex];
-      const projectPath = path.join(appsDir, selectedProject);
+    // 读取 apps 目录下的一级文件夹
+    const items = await fs.readdir(appsDir, { withFileTypes: true });
+    const appDirs = items.filter(item => item.isDirectory()).map(dir => dir.name);
 
-      console.log(`\n正在启动项目: ${selectedProject}`);
-      console.log(`路径: ${projectPath}`);
-
-      // 执行 pnpm --filter 项目名 dev
-      const command = `pnpm --filter ${selectedProject} dev`;
-      console.log(`执行命令: ${command}`);
-
-      const child = exec(command, { cwd: process.cwd() });
-
-      // 将子进程的输出传递到主进程
-      child.stdout?.on("data", data => {
-        process.stdout.write(data);
-      });
-
-      child.stderr?.on("data", data => {
-        process.stderr.write(data);
-      });
-
-      child.on("close", code => {
-        console.log(`\n子进程退出，退出码: ${code}`);
-        process.exit(code || 0);
-      });
-
-      readline.removeAllListeners("data");
-    } else {
-      console.log("无效选择，请重新选择");
-      inputBuffer = "";
-      selectedIndex = 0;
+    if (appDirs.length === 0) {
+      console.log(chalk.yellow("⚠️  apps 目录下没有子目录！"));
+      process.exit(1);
     }
-  } else if (chunk === "\u0003") {
-    // Ctrl+C
-    console.log("\n退出");
-    process.exit(0);
-  } else {
-    // 处理数字输入
-    const char = chunk.trim();
-    if (/^\d$/.test(char)) {
-      const num = parseInt(char) - 1;
-      if (num >= 0 && num < validProjects.length) {
-        selectedIndex = num;
-        console.log(`\n已选择: ${validProjects[selectedIndex]}`);
-        console.log("按回车确认或重新选择:");
-        inputBuffer = "";
+
+    console.log(chalk.cyan("📱 请选择要启动的应用："));
+    console.log("");
+
+    // 显示选项列表
+    appDirs.forEach((app, index) => {
+      console.log(chalk.green(`  ${index + 1}. ${app}`));
+    });
+    console.log(chalk.gray(`  0. 全部启动`));
+    console.log("");
+
+    // 获取用户选择
+    const answer = await question(chalk.blue("➡️  请输入序号（用逗号分隔可以选择多个）: "));
+
+    // 处理用户输入
+    let selections = [];
+    if (answer.trim() === "0") {
+      selections = appDirs;
+    } else {
+      const indexes = answer
+        .split(",")
+        .map(num => parseInt(num.trim()) - 1)
+        .filter(index => index >= 0 && index < appDirs.length);
+
+      selections = indexes.map(index => appDirs[index]);
+
+      if (selections.length === 0) {
+        console.log(chalk.red("❌ 无效的选择！"));
+        rl.close();
+        process.exit(1);
       }
     }
+
+    // 显示选择结果
+    console.log("");
+    console.log(chalk.cyan(`🎯 已选择：${selections.join(", ")}`));
+    console.log("");
+
+    // 检查并执行 dev 命令
+    const results = [];
+
+    for (const appDir of selections) {
+      const appPath = path.join(appsDir, appDir);
+      const packageJsonPath = path.join(appPath, "package.json");
+
+      try {
+        // 检查 package.json 是否存在
+        await fs.access(packageJsonPath);
+
+        // 读取 package.json
+        const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf8"));
+
+        // 检查是否有 dev 脚本
+        if (!packageJson.scripts || !packageJson.scripts.dev) {
+          console.log(chalk.yellow(`⚠️  ${appDir} 没有 dev 脚本，跳过`));
+          continue;
+        }
+
+        console.log(chalk.green(`🚀 启动 ${appDir}...`));
+
+        // 使用 concurrently 并行执行，或者按顺序执行
+        const command = `cd ${appPath} && npm run dev`;
+
+        // 在新进程中执行命令
+        const child = exec(command, {
+          cwd: appPath,
+          stdio: "inherit"
+        });
+
+        // 监听输出
+        child.stdout?.on("data", data => {
+          console.log(chalk.blue(`[${appDir}] ${data}`));
+        });
+
+        child.stderr?.on("data", data => {
+          console.log(chalk.red(`[${appDir} ERROR] ${data}`));
+        });
+
+        results.push({
+          app: appDir,
+          process: child
+        });
+
+        // 等待 500ms，避免日志混在一起
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        console.log(chalk.red(`❌ ${appDir} 启动失败: ${error.message}`));
+      }
+    }
+
+    if (results.length === 0) {
+      console.log(chalk.yellow("⚠️  没有成功启动任何应用"));
+      rl.close();
+      process.exit(1);
+    }
+
+    console.log("");
+    console.log(chalk.green("✅ 所有应用已启动完成！"));
+    console.log(chalk.gray("按 Ctrl+C 停止所有应用"));
+    console.log("");
+
+    // 处理进程退出
+    const cleanup = () => {
+      console.log(chalk.yellow("\n🛑 正在停止所有应用..."));
+      results.forEach(result => {
+        result.process.kill("SIGINT");
+      });
+      rl.close();
+      process.exit(0);
+    };
+
+    process.on("SIGINT", cleanup);
+    process.on("SIGTERM", cleanup);
+  } catch (error) {
+    console.error(chalk.red(`❌ 发生错误: ${error.message}`));
+    rl.close();
+    process.exit(1);
   }
-});
+}
+
+// 运行主函数
+selectAndRunApp();
