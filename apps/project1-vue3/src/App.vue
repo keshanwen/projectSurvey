@@ -9,6 +9,7 @@ console.log(a, b);
 let c = 25;
 
 let d = 34;
+let e = 34;
 const hanleclick = () => {
   a.value += 1;
 };

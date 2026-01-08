@@ -3,7 +3,9 @@ import HelloWorld from "./components/HelloWorld.vue";
 
 const c = 24;
 
-const a = 11
+const a = 11;
+
+const d = 11;
 </script>
 
 <template>
