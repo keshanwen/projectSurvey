@@ -10,6 +10,7 @@ let c = 25;
 
 let d = 34;
 let e = 34;
+let f = 36;
 const hanleclick = () => {
   a.value += 1;
 };
