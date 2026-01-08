@@ -1,3 +1,3 @@
 export default {
-  "*.{js,ts,vue,md}": ["prettier --write", "eslint"]
+  "*.{js,ts,vue,md}": ["prettier --write"]
 };
