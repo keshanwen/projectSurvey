@@ -1,3 +1,4 @@
 #!/usr/bin/env sh
 
 echo "🚀 开始代码检查..."
+pnpm lint:prettier 

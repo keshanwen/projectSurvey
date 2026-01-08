@@ -10,7 +10,7 @@ const ignores = ["**/dist/**", "**/node_modules/**", ".*", "scripts/**", "**/*.d
 
 export default defineConfig(
   {
-    ignores, 
+    ignores,
     extends: [eslint.configs.recommended, ...tseslint.configs.recommended, eslintConfigPrettier],
     plugins: {
       prettier: eslintPluginPrettier

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import HelloWorld from "./components/HelloWorld.vue";
+
+const c = 24;
 </script>
 
 <template>

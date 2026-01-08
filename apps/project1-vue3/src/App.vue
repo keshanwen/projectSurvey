@@ -9,7 +9,6 @@ let b = ref(2);
 const hanleclick = () => {
   a.value += 1;
 };
-
 </script>
 
 <template>
