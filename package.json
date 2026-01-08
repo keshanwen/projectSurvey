@@ -12,7 +12,8 @@
     "build:2": "pnpm --filter project2-vue3 build",
     "preview:2": "pnpm --filter project2-vue3 preview",
     "dev:3": "pnpm --filter project3-react dev",
-    "build:packages": "node ./scripts/build.js"
+    "build:packages": "node ./scripts/build.js",
+    "lint:prettier": "prettier --write \"**/*.{js,ts,mjs,cjs,json,tsx,css,less,scss,vue,html,md}\""
   },
   "engines": {
     "node": ">=20.19.6",
@@ -29,6 +30,7 @@
     "@types/node": "^24.10.4",
     "@vitejs/plugin-vue": "^6.0.3",
     "@vue/tsconfig": "^0.8.1",
+    "prettier": "^3.7.4",
     "rollup": "^4.55.1",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-typescript2": "^0.36.0",

@@ -1,25 +1,22 @@
 <script setup lang="ts">
-import { ref } from 'vue' 
-import { sum } from '@project-survey/utils'
-import { List } from "@project-survey/ui"
+import { ref } from "vue";
+import { sum } from "@project-survey/utils";
+import { List } from "@project-survey/ui";
 
-
-let a = ref(1)
-let b = ref(2)
+let a = ref(1);
+let b = ref(2);
 
 const hanleclick = () => {
   a.value += 1;
-}
-
+};
 </script>
 
 <template>
   <div>
-   <h1>{{ sum(a,b) }}</h1>
-   <button @click="hanleclick">click</button>
-   <List/>
+    <h1>{{ sum(a, b) }}</h1>
+    <button @click="hanleclick">click</button>
+    <List />
   </div>
-  
 </template>
 
 <style scoped>

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue";
-import { sum } from '@project-survey/utils'
+import { sum } from "@project-survey/utils";
 
 const n1 = ref(1);
 const n2 = ref(2);

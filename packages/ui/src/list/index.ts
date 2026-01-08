@@ -1,1 +1,1 @@
-export { default as List } from './index.vue'
+export { default as List } from "./index.vue";

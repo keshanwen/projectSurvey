@@ -1,12 +1,11 @@
-import path from "node:path";        
-import URL from "node:url";          
-import fs from "node:fs";            
-import { nodeResolve } from "@rollup/plugin-node-resolve";  
-import commonjs from "@rollup/plugin-commonjs";             
-import typescript from "rollup-plugin-typescript2";        
-import vue from "@vitejs/plugin-vue";                     
-import postcss from "rollup-plugin-postcss";              
-
+import path from "node:path";
+import URL from "node:url";
+import fs from "node:fs";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+import typescript from "rollup-plugin-typescript2";
+import vue from "@vitejs/plugin-vue";
+import postcss from "rollup-plugin-postcss";
 
 const __filename = URL.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,51 +38,53 @@ async function getRollupConfig(root) {
   const dist = path.resolve(root, "./dist");
   // 构建入口文件路径
   const entry = path.resolve(root, "./src/index.ts");
-  
+
   // 定义 Rollup 配置对象
   const rollupOptions = {
-    input: entry,              // 入口文件
-    sourcemap: true,           // 生成源映射
-    external: ["vue"],         // 外部依赖，不打包到输出文件中,因为用到该组件一定用的是该框架
-    plugins: [                 // 插件列表
-      nodeResolve(),           // 解析 node_modules 中的模块
-      commonjs(),              // 将 CommonJS 模块转换为 ES6 模块
+    input: entry, // 入口文件
+    sourcemap: true, // 生成源映射
+    external: ["vue"], // 外部依赖，不打包到输出文件中,因为用到该组件一定用的是该框架
+    plugins: [
+      // 插件列表
+      nodeResolve(), // 解析 node_modules 中的模块
+      commonjs(), // 将 CommonJS 模块转换为 ES6 模块
       typescript({
-        tsconfig,              // TypeScript 配置文件
+        tsconfig, // TypeScript 配置文件
         compilerOptions: {
-          outDir: dist         // TypeScript 编译输出目录
+          outDir: dist // TypeScript 编译输出目录
         }
       }),
-      postcss()                // 处理 CSS 文件
+      postcss() // 处理 CSS 文件
     ],
-    dir: dist                  // 输出目录
+    dir: dist // 输出目录
   };
-  
+
   // 构建输出配置数组
   const output = [];
   for (const format of formats) {
     // 定义单个输出格式的配置
     const outputItem = {
-      format,                   // 输出格式 (如 es, cjs, iife 等)
-      file: path.resolve(dist, `index.${format}.js`),  // 输出文件路径
-      sourcemap: true,         // 生成源映射
-      globals: {               // 全局变量映射
+      format, // 输出格式 (如 es, cjs, iife 等)
+      file: path.resolve(dist, `index.${format}.js`), // 输出文件路径
+      sourcemap: true, // 生成源映射
+      globals: {
+        // 全局变量映射
         vue: "Vue"
       }
     };
     // 如果是 IIFE 格式，需要指定库的全局变量名
     if (format === "iife") {
-      outputItem.name = name;  // 库名
+      outputItem.name = name; // 库名
     }
     output.push(outputItem);
   }
   rollupOptions.output = output;
-  
+
   // 配置监听选项
   rollupOptions.watch = {
-    include: path.resolve(root, "src/**"),      // 监听 src 目录下的所有文件
-    exclude: path.resolve(root, "node_modules/**"),  // 排除 node_modules 目录
-    clearScreen: false                          // 不清屏
+    include: path.resolve(root, "src/**"), // 监听 src 目录下的所有文件
+    exclude: path.resolve(root, "node_modules/**"), // 排除 node_modules 目录
+    clearScreen: false // 不清屏
   };
   return rollupOptions;
 }
