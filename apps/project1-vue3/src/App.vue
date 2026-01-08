@@ -5,7 +5,7 @@ import { List } from "@project-survey/ui";
 
 let a = ref(1);
 let b = ref(2);
-
+console.log(a,b)
 const hanleclick = () => {
   a.value += 1;
 };
