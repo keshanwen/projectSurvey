@@ -16,7 +16,8 @@
     "lint:prettier": "prettier --write \"**/*.{js,ts,mjs,cjs,json,tsx,css,less,scss,vue,html,md}\"",
     "lint:eslint": "eslint",
     "commit": "git-cz",
-    "prepare": "husky"
+    "prepare": "husky",
+    "precommit": "lint-staged"
   },
   "config": {
     "commitizen": {
@@ -49,6 +50,7 @@
     "eslint-plugin-vue": "^10.6.2",
     "globals": "^16.5.0",
     "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",
     "rollup": "^4.55.1",
     "rollup-plugin-postcss": "^4.0.2",
