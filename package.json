@@ -24,6 +24,7 @@
       "path": "node_modules/cz-git"
     }
   },
+  "type": "module",
   "engines": {
     "node": ">=20.19.6",
     "npm": ">=10.8.2",
