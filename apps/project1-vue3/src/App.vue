@@ -6,11 +6,7 @@ import { List } from "@project-survey/ui";
 let a = ref(1);
 let b = ref(2);
 console.log(a, b);
-let c = 25;
 
-let d = 34;
-let e = 34;
-let f = 36;
 const hanleclick = () => {
   a.value += 1;
 };
