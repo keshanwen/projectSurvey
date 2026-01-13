@@ -1,5 +1,6 @@
-import { createSignal, onCleanup } from "solid-js";
+import { createSignal, createEffect  } from "solid-js";
 import "./index.css";
+import type { JSX } from "solid-js";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -9,35 +10,21 @@ export interface ModalProps {
   onConfirm?: () => void;
   confirmText?: string;
   cancelText?: string;
+  cickOverlayClose?: boolean;
 }
 
 export default function Modal(props: ModalProps) {
   const [isVisible, setIsVisible] = createSignal(props.isOpen);
 
-  // 同步 isOpen 状态
-  if (props.isOpen !== isVisible()) {
+    // 创建一个 effect 来监听 props.isOpen 的变化
+  createEffect(() => {
     setIsVisible(props.isOpen);
-  }
-
-  // 键盘事件监听：ESC 关闭
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Escape") {
-      props.onClose();
-    }
-  };
-
-  // 添加全局事件监听
-  if (props.isOpen) {
-    document.addEventListener("keydown", handleKeyDown);
-    onCleanup(() => {
-      document.removeEventListener("keydown", handleKeyDown);
-    });
-  }
+  });
 
   return (
     <>
-      {props.isOpen && (
-        <div class="modal-overlay" onClick={props.onClose}>
+      {isVisible() && (
+        <div class="modal-overlay" onClick={() => props.cickOverlayClose && props.onClose() }>
           <div class="modal-content" onClick={e => e.stopPropagation()}>
             {props.title && <h3 class="modal-title">{props.title}</h3>}
             <div class="modal-body">{props.content}</div>
