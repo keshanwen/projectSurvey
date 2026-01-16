@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>移动端 Picker 选择器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+        }
+        
+        .picker-container {
+            width: 320px;
+            max-width: 90vw;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 24px;
+        }
+        
+        .picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eaeaea;
+            margin-bottom: 20px;
+        }
+        
+        .picker-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .picker-confirm {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .picker-confirm:hover {
+            background: #0056CC;
+        }
+        
+        .picker-wrapper {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .picker-mask {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+            background: linear-gradient(to bottom, 
+                rgba(255,255,255,0.95) 0%, 
+                rgba(255,255,255,0.7) 30%, 
+                rgba(255,255,255,0) 50%, 
+                rgba(255,255,255,0) 50%, 
+                rgba(255,255,255,0.7) 70%, 
+                rgba(255,255,255,0.95) 100%);
+        }
+        
+        .picker-indicator {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 44px;
+            transform: translateY(-50%);
+            border-top: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .picker-content {
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease-out;
+        }
+        
+        .picker-item {
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #999;
+            transition: all 0.2s;
+            user-select: none;
+            cursor: pointer;
+        }
+        
+        .picker-item.selected {
+            color: #333;
+            font-size: 22px;
+            font-weight: 500;
+        }
+        
+        .picker-value-display {
+            margin-top: 24px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 18px;
+            color: #333;
+            border: 1px solid #e9ecef;
+        }
+        
+        .value-highlight {
+            color: #007AFF;
+            font-weight: 600;
+        }
+        
+        /* 多列选择器样式 */
+        .multi-picker {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .picker-column {
+            flex: 1;
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="picker-container">
+        <div class="picker-header">
+            <div class="picker-title">请选择</div>
+            <button class="picker-confirm" id="confirmBtn">确定</button>
+        </div>
+        
+        <!-- 单列选择器 -->
+        <div class="picker-wrapper">
+            <div class="picker-mask"></div>
+            <div class="picker-indicator"></div>
+            <div class="picker-content" id="pickerContent">
+                <!-- 选项会通过JS动态生成 -->
+            </div>
+        </div>
+        
+        <!-- 多列选择器示例 -->
+        <div class="multi-picker" id="multiPicker" style="display: none;">
+            <div class="picker-column">
+                <div class="picker-mask"></div>
+                <div class="picker-indicator"></div>
+                <div class="picker-content" id="column1"></div>
+            </div>
+            <div class="picker-column">
+                <div class="picker-mask"></div>
+                <div class="picker-indicator"></div>
+                <div class="picker-content" id="column2"></div>
+            </div>
+        </div>
+        
+        <div class="picker-value-display">
+            当前选择: <span id="selectedValue" class="value-highlight">请滚动选择</span>
+        </div>
+    </div>
+
+    <script>
+        class Picker {
+            constructor(containerId, options = {}) {
+                this.container = document.getElementById(containerId);
+                this.options = options.data || this.generateDefaultOptions();
+                this.selectedIndex = options.selectedIndex || Math.floor(this.options.length / 2);
+                this.itemHeight = 44;
+                this.isDragging = false;
+                this.startY = 0;
+                this.currentY = 0;
+                this.velocity = 0;
+                this.lastY = 0;
+                this.lastTime = 0;
+                this.animationId = null;
+                
+                this.init();
+            }
+            
+            generateDefaultOptions() {
+                // 生成默认选项（数字1-50）
+                return Array.from({length: 50}, (_, i) => ({
+                    label: `选项 ${i + 1}`,
+                    value: i + 1
+                }));
+            }
+            
+            init() {
+                this.render();
+                this.bindEvents();
+                this.scrollToIndex(this.selectedIndex, 0);
+            }
+            
+            render() {
+                this.container.innerHTML = '';
+                this.options.forEach((option, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'picker-item';
+                    item.dataset.index = index;
+                    item.textContent = option.label;
+                    this.container.appendChild(item);
+                });
+                this.updateSelection();
+            }
+            
+            bindEvents() {
+                // 触摸事件
+                this.container.addEventListener('touchstart', this.onTouchStart.bind(this));
+                this.container.addEventListener('touchmove', this.onTouchMove.bind(this));
+                this.container.addEventListener('touchend', this.onTouchEnd.bind(this));
+                
+                // 鼠标事件（桌面端兼容）
+                this.container.addEventListener('mousedown', this.onMouseDown.bind(this));
+                document.addEventListener('mousemove', this.onMouseMove.bind(this));
+                document.addEventListener('mouseup', this.onMouseUp.bind(this));
+                
+                // 点击选择
+                this.container.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('picker-item')) {
+                        const index = parseInt(e.target.dataset.index);
+                        this.selectIndex(index);
+                    }
+                });
+            }
+            
+            onTouchStart(e) {
+                e.preventDefault();
+                this.startDrag(e.touches[0].clientY);
+            }
+            
+            onTouchMove(e) {
+                if (!this.isDragging) return;
+                e.preventDefault();
+                this.doDrag(e.touches[0].clientY);
+            }
+            
+            onTouchEnd(e) {
+                if (!this.isDragging) return;
+                this.endDrag();
+            }
+            
+            onMouseDown(e) {
+                e.preventDefault();
+                this.startDrag(e.clientY);
+            }
+            
+            onMouseMove(e) {
+                if (!this.isDragging) return;
+                this.doDrag(e.clientY);
+            }
+            
+            onMouseUp() {
+                if (!this.isDragging) return;
+                this.endDrag();
+            }
+            
+            startDrag(y) {
+                this.isDragging = true;
+                this.startY = y;
+                this.currentY = this.getCurrentTranslateY();
+                this.velocity = 0;
+                this.lastY = y;
+                this.lastTime = Date.now();
+                
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+            }
+            
+            doDrag(y) {
+                const now = Date.now();
+                const deltaTime = now - this.lastTime;
+                
+                if (deltaTime > 0) {
+                    const deltaY = y - this.lastY;
+                    this.velocity = deltaY / deltaTime;
+                    this.lastY = y;
+                    this.lastTime = now;
+                }
+                
+                const diff = y - this.startY;
+                let newY = this.currentY + diff;
+                
+                // 边界处理
+                const maxY = 0;
+                const minY = -(this.options.length - 1) * this.itemHeight;
+                newY = Math.max(Math.min(newY, maxY), minY);
+                
+                this.setTranslateY(newY);
+                this.updateSelection();
+            }
+            
+            endDrag() {
+                this.isDragging = false;
+                
+                // 惯性滚动
+                const momentum = Math.abs(this.velocity) > 0.1 ? this.velocity * 300 : 0;
+                let targetY = this.getCurrentTranslateY() + momentum;
+                
+                // 对齐到最近的选项
+                const index = Math.round(-targetY / this.itemHeight);
+                this.selectIndex(index);
+            }
+            
+            selectIndex(index) {
+                index = Math.max(0, Math.min(index, this.options.length - 1));
+                this.selectedIndex = index;
+                this.scrollToIndex(index);
+                
+                // 触发选择事件
+                if (this.options.onSelect) {
+                    this.options.onSelect(this.options[index], index);
+                }
+                
+                // 更新显示
+                this.updateDisplay();
+            }
+            
+            scrollToIndex(index, duration = 300) {
+                const targetY = -index * this.itemHeight;
+                const startY = this.getCurrentTranslateY();
+                const startTime = Date.now();
+                
+                const animate = () => {
+                    const now = Date.now();
+                    const elapsed = now - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // 缓动函数
+                    const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+                    const currentY = startY + (targetY - startY) * easeOut(progress);
+                    
+                    this.setTranslateY(currentY);
+                    this.updateSelection();
+                    
+                    if (progress < 1) {
+                        this.animationId = requestAnimationFrame(animate);
+                    } else {
+                        this.animationId = null;
+                    }
+                };
+                
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                this.animationId = requestAnimationFrame(animate);
+            }
+            
+            getCurrentTranslateY() {
+                const transform = this.container.style.transform;
+                if (!transform || transform === 'none') return 0;
+                
+                const match = transform.match(/translateY\(([^)]+)px\)/);
+                return match ? parseFloat(match[1]) : 0;
+            }
+            
+            setTranslateY(y) {
+                this.container.style.transform = `translateY(${y}px)`;
+            }
+            
+            updateSelection() {
+                const items = this.container.querySelectorAll('.picker-item');
+                const currentY = this.getCurrentTranslateY();
+                const centerIndex = Math.round(-currentY / this.itemHeight);
+                
+                items.forEach((item, index) => {
+                    const distance = Math.abs(index - centerIndex);
+                    
+                    if (distance === 0) {
+                        item.classList.add('selected');
+                    } else {
+                        item.classList.remove('selected');
+                    }
+                });
+                
+                this.selectedIndex = Math.max(0, Math.min(centerIndex, this.options.length - 1));
+            }
+            
+            updateDisplay() {
+                const selectedValue = document.getElementById('selectedValue');
+                if (selectedValue && this.options[this.selectedIndex]) {
+                    selectedValue.textContent = this.options[this.selectedIndex].label;
+                }
+            }
+            
+            getSelectedValue() {
+                return this.options[this.selectedIndex];
+            }
+            
+            updateOptions(newOptions) {
+                this.options = newOptions;
+                this.selectedIndex = Math.min(this.selectedIndex, newOptions.length - 1);
+                this.render();
+                this.scrollToIndex(this.selectedIndex);
+            }
+        }
+
+        // 初始化选择器
+        document.addEventListener('DOMContentLoaded', () => {
+            // 创建示例数据
+            const sampleData = [
+                {label: '北京', value: 'beijing'},
+                {label: '上海', value: 'shanghai'},
+                {label: '广州', value: 'guangzhou'},
+                {label: '深圳', value: 'shenzhen'},
+                {label: '杭州', value: 'hangzhou'},
+                {label: '成都', value: 'chengdu'},
+                {label: '武汉', value: 'wuhan'},
+                {label: '西安', value: 'xian'},
+                {label: '南京', value: 'nanjing'},
+                {label: '重庆', value: 'chongqing'}
+            ];
+            
+            // 创建选择器实例
+            const picker = new Picker('pickerContent', {
+                data: sampleData,
+                selectedIndex: 2
+            });
+            
+            // 确定按钮点击事件
+            document.getElementById('confirmBtn').addEventListener('click', () => {
+                const selected = picker.getSelectedValue();
+                alert(`您选择了: ${selected.label} (值: ${selected.value})`);
+            });
+            
+            // 动态更新选项示例
+            setTimeout(() => {
+                const newOptions = [
+                    {label: '红色', value: 'red'},
+                    {label: '蓝色', value: 'blue'},
+                    {label: '绿色', value: 'green'},
+                    {label: '黄色', value: 'yellow'},
+                    {label: '紫色', value: 'purple'}
+                ];
+                picker.updateOptions(newOptions);
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
